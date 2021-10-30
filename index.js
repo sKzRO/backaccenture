@@ -140,28 +140,30 @@ MongoClient.connect(uri, { useUnifiedTopology: true,   useNewUrlParser: true})
           })
           .then(() => {
 
-        restaurants.countDocuments().then((currentId) => {
-            const place = {
-                id: currentId+1,
-                title: req.body.title,
-                description: req.body.description,
-                rating: 0,
-                ratingNumbers: 0,
-                image: req.body.image,
-                category: req.body.category,
-                address: req.body.address,
-                features: req.body.features,
-                website: req.body.website,
-                addedBy: req.body.uid
-              };
+            restaurants.countDocuments().then((currentId) => {
+              const place = {
+                  id: currentId+1,
+                  title: req.body.title,
+                  description: req.body.description,
+                  rating: 0,
+                  ratingNumbers: 0,
+                  image: req.body.image,
+                  category: req.body.category,
+                  address: req.body.address,
+                  features: req.body.features,
+                  website: req.body.website,
+                  addedBy: req.body.uid
+                };
+      
+                restaurants.insertOne(place, (err, result) => {
+                      console.log(result);
+                      res.send(result)
+                })
+          });
     
-              restaurants.insertOne(place, (err, result) => {
-                    console.log(result);
-                    res.send(result)
-              })
-        });
-      });
-  
+          });
+
+
       });
 
 
@@ -304,23 +306,13 @@ MongoClient.connect(uri, { useUnifiedTopology: true,   useNewUrlParser: true})
                     });
                   })
                   .then(() => {
-                    events.countDocuments().then((currentId) => {
-                      const place = {
-                          id: currentId+1,
-                          title: req.body.title,
-                          image: req.body.image,
-                          description: req.body.description,
-                          date: req.body.date,
-                          category: req.body.category,
-                          addedBy: req.body.uid
-                        };
-              
-                        events.insertOne(place, (err, result) => {
-                              console.log(result);
-                              res.send(result)
-                        })
-                  });
-                }).then((e) => {
+                    topics.updateOne(
+                      {id: id}, 
+                      {$addToSet: {answears : {
+                          "answear" : answear,
+                          "addedBy": addedBy
+                      }} }
+                  ).then((e) => {
                       console.log(e)
                       res.send("gol")
                   })
@@ -328,7 +320,22 @@ MongoClient.connect(uri, { useUnifiedTopology: true,   useNewUrlParser: true})
 
     
         
-
+                events.countDocuments().then((currentId) => {
+                    const place = {
+                        id: currentId+1,
+                        title: req.body.title,
+                        image: req.body.image,
+                        description: req.body.description,
+                        date: req.body.date,
+                        category: req.body.category,
+                        addedBy: req.body.uid
+                      };
+            
+                      events.insertOne(place, (err, result) => {
+                            console.log(result);
+                            res.send(result)
+                      })
+                });
           
               });
 
