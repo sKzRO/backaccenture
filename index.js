@@ -129,6 +129,17 @@ MongoClient.connect(uri, { useUnifiedTopology: true,   useNewUrlParser: true})
 
     app.post('/addrestaurant', function (req, res) {
 
+      var ref = database.ref('users/' + req.query.uid);
+      ref
+          .once('value')
+          .then(function (snapshot) {
+            return ref.update({
+              points:
+                snapshot.val().points + 20,
+            });
+          })
+          .then(() => {
+
         restaurants.countDocuments().then((currentId) => {
             const place = {
                 id: currentId+1,
@@ -149,6 +160,7 @@ MongoClient.connect(uri, { useUnifiedTopology: true,   useNewUrlParser: true})
                     res.send(result)
               })
         });
+      });
   
       });
 
@@ -282,7 +294,7 @@ MongoClient.connect(uri, { useUnifiedTopology: true,   useNewUrlParser: true})
             app.post('/addevent', function (req, res) {
 
               
-              var ref = database.ref('users/' + req.body.uid);
+              var ref = database.ref('users/' + req.query.uid);
               ref
                   .once('value')
                   .then(function (snapshot) {
@@ -292,13 +304,6 @@ MongoClient.connect(uri, { useUnifiedTopology: true,   useNewUrlParser: true})
                     });
                   })
                   .then(() => {
-                    topics.updateOne(
-                      {id: id}, 
-                      {$addToSet: {answears : {
-                          "answear" : answear,
-                          "addedBy": addedBy
-                      }} }
-                  ).then((e) => {
                     events.countDocuments().then((currentId) => {
                       const place = {
                           id: currentId+1,
@@ -315,6 +320,9 @@ MongoClient.connect(uri, { useUnifiedTopology: true,   useNewUrlParser: true})
                               res.send(result)
                         })
                   });
+                }).then((e) => {
+                      console.log(e)
+                      res.send("gol")
                   })
                   });
 
