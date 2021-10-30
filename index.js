@@ -27,6 +27,7 @@ admin.initializeApp({
   credential: admin.credential.cert(serviceAccount),
   databaseURL: 'https://accenture-f4fff-default-rtdb.firebaseio.com/',
 });
+var database = admin.database();
 
 
 MongoClient.connect(uri, { useUnifiedTopology: true,   useNewUrlParser: true})
@@ -382,6 +383,8 @@ MongoClient.connect(uri, { useUnifiedTopology: true,   useNewUrlParser: true})
           
               });
 
+
+
     // Rutele pentru firebase
        // FIREBASE
        var config = {
@@ -391,6 +394,101 @@ MongoClient.connect(uri, { useUnifiedTopology: true,   useNewUrlParser: true})
       };
     //   admin.initializeApp(config);
 
+  app.get('/createuser', function (req, res) {
+      const idToken = req.query.token;
 
+      console.log(req.query.token);
+
+      if (!idToken) {
+        res.sendStatus(403);
+      } else {
+        admin
+          .auth()
+          .verifyIdToken(idToken)
+          .then((decodedToken) => {
+            const uid = decodedToken.uid;
+            console.log(decodedToken.uid);
+            // const dbRef = database.ref();
+            database
+              .ref('users/' + uid)
+              .set({
+                created: new Date().getTime(),
+                email: decodedToken.email,
+                lastLoggedIn: new Date().getTime(),
+                phone: req.query.phone,
+                currentLocation: req.query.currentLocation,
+                newLocation: req.query.newLocation,
+                uid: uid,
+                points: 0,
+              })
+              .then(() => {
+                res.send({
+                    created: new Date().getTime(),
+                    email: decodedToken.email,
+                    lastLoggedIn: new Date().getTime(),
+                    phone: req.query.phone,
+                    currentLocation: req.query.currentLocation,
+                    newLocation: req.query.newLocation,
+                    uid: uid,
+                    points: 0,
+                });
+              })
+              .catch((error) => {
+                res.send(error);
+              });
+          })
+          .catch((e) => {
+            // Handle error
+            console.log(e);
+            res.sendStatus(401);
+          });
+      }
+    });
+
+    app.get('/getuser', function (req, res) {
+        const idToken = req.query.token;
+  
+        if (!idToken) {
+          res.sendStatus(403);
+        } else {
+          admin
+            .auth()
+            .verifyIdToken(idToken)
+            .then((decodedToken) => {
+              const uid = decodedToken.uid;
+              const dbRef = database.ref();
+              var ref = database.ref('users/' + uid);
+              ref
+                .once('value')
+                .then(function (snapshot) {
+                  return ref.update({
+                    lastLoggedIn: new Date().getTime(),
+                  });
+                })
+                .then(() => {
+                  dbRef
+                    .child('users')
+                    .child(uid)
+                    .get()
+                    .then((snapshot) => {
+                      if (snapshot.exists()) {
+                        console.log(snapshot.val());
+                        res.send(snapshot.val());
+                      } else {
+                        console.log('No data available');
+                        res.send(false);
+                      }
+                    })
+                    .catch((error) => {
+                      console.error(error);
+                    });
+                });
+            })
+            .catch(() => {
+              // Handle error
+              res.sendStatus(401);
+            });
+        }
+      });
 
 }).catch(console.error);
