@@ -349,36 +349,20 @@ MongoClient.connect(uri, { useUnifiedTopology: true,   useNewUrlParser: true})
 
               app.post('/addAnswear', function (req, res) {
 
-                const id = req.body.id;
+                const id = parseInt(req.body.id);
                 const addedBy = req.body.uid;
                 const answear = req.body.answear;
 
-
-                topics
-                    .find({id: parseInt(id)})
-                    .toArray()
-                    .then((results) => {
-                        if (!results.answears) {
-                            const currentAnswear = {
-                                addedBy: addedBy,
-                                answear: answear
-                            }
-                            const vector = [];
-                            vector[0] = currentAnswear;
-                            topics.updateOne({
-                                id: id
-                            }, {
-                                $set: {
-                                    answears : vector
-                                }
-                            }).then(() => {
-                                res.send("gol")
-                            })
-                        } else {
-                            res.send(results.answears);
-                        }
-                    })
-                    .catch((error) => console.error(error));
+                topics.updateOne(
+                    {id: id}, 
+                    {$addToSet: {answears : {
+                        "answear" : answear,
+                        "addedBy": addedBy
+                    }} }
+                ).then((e) => {
+                    console.log(e)
+                    res.send("gol")
+                })
         
           
               });
