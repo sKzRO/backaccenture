@@ -78,26 +78,41 @@ MongoClient.connect(uri, { useUnifiedTopology: true,   useNewUrlParser: true})
 
     app.post('/addplace', function (req, res) {
 
-        places.countDocuments().then((currentId) => {
-            const place = {
-                id: currentId+1,
-                title: req.body.title,
-                description: req.body.description,
-                rating: 0,
-                ratingNumbers: 0,
-                image: req.body.image,
-                category: req.body.category,
-                address: req.body.address,
-                features: req.body.features,
-                website: req.body.website,
-                addedBy: req.body.uid
-              };
+      var ref = database.ref('users/' + req.body.uid);
+      ref
+          .once('value')
+          .then(function (snapshot) {
+            return ref.update({
+              points:
+                snapshot.val().points + 10,
+            });
+          })
+          .then(() => {
+
+
+            places.countDocuments().then((currentId) => {
+              const place = {
+                  id: currentId+1,
+                  title: req.body.title,
+                  description: req.body.description,
+                  rating: 0,
+                  ratingNumbers: 0,
+                  image: req.body.image,
+                  category: req.body.category,
+                  address: req.body.address,
+                  features: req.body.features,
+                  website: req.body.website,
+                  addedBy: req.body.name
+                };
+      
+                places.insertOne(place, (err, result) => {
+                      console.log(result);
+                      res.send(result)
+                })
+          });
     
-              places.insertOne(place, (err, result) => {
-                    console.log(result);
-                    res.send(result)
-              })
-        });
+          });
+
   
       });
 
@@ -129,13 +144,15 @@ MongoClient.connect(uri, { useUnifiedTopology: true,   useNewUrlParser: true})
 
     app.post('/addrestaurant', function (req, res) {
 
-      var ref = database.ref('users/' + req.query.uid);
+      console.log(req.body.uid);
+
+      var ref = database.ref('users/' + req.body.uid);
       ref
           .once('value')
           .then(function (snapshot) {
             return ref.update({
               points:
-                snapshot.val().points + 20,
+                snapshot.val().points + 10,
             });
           })
           .then(() => {
@@ -152,7 +169,7 @@ MongoClient.connect(uri, { useUnifiedTopology: true,   useNewUrlParser: true})
                   address: req.body.address,
                   features: req.body.features,
                   website: req.body.website,
-                  addedBy: req.body.uid
+                  addedBy: req.body.name
                 };
       
                 restaurants.insertOne(place, (err, result) => {
@@ -195,26 +212,44 @@ MongoClient.connect(uri, { useUnifiedTopology: true,   useNewUrlParser: true})
 
     app.post('/addlocalcustom', function (req, res) {
 
-        localcustoms.countDocuments().then((currentId) => {
-            const place = {
-                id: currentId+1,
-                title: req.body.title,
-                description: req.body.description,
-                rating: 0,
-                ratingNumbers: 0,
-                image: req.body.image,
-                category: req.body.category,
-                address: req.body.address,
-                features: req.body.features,
-                website: req.body.website,
-                addedBy: req.body.uid
-              };
+      var ref = database.ref('users/' + req.body.uid);
+      ref
+          .once('value')
+          .then(function (snapshot) {
+            return ref.update({
+              points:
+                snapshot.val().points + 10,
+            });
+          })
+          .then(() => {
+
+            localcustoms.countDocuments().then((currentId) => {
+              const place = {
+                  id: currentId+1,
+                  title: req.body.title,
+                  description: req.body.description,
+                  rating: 0,
+                  ratingNumbers: 0,
+                  image: req.body.image,
+                  category: req.body.category,
+                  address: req.body.address,
+                  features: req.body.features,
+                  website: req.body.website,
+                  addedBy: req.body.name
+                };
+      
+                localcustoms.insertOne(place, (err, result) => {
+                      console.log(result);
+                      res.send(result)
+                })
+          });
     
-              localcustoms.insertOne(place, (err, result) => {
-                    console.log(result);
-                    res.send(result)
-              })
-        });
+          });
+
+
+      
+
+
   
       });
 
@@ -246,23 +281,37 @@ MongoClient.connect(uri, { useUnifiedTopology: true,   useNewUrlParser: true})
               });
         
             app.post('/addlocallaw', function (req, res) {
+
+              var ref = database.ref('users/' + req.body.uid);
+              ref
+                  .once('value')
+                  .then(function (snapshot) {
+                    return ref.update({
+                      points:
+                        snapshot.val().points + 10,
+                    });
+                  })
+                  .then(() => {
         
-                locallaws.countDocuments().then((currentId) => {
-                    const place = {
-                        id: currentId+1,
-                        title: req.body.title,
-                        description: req.body.description,
-                        article: req.body.article,
-                        year: req.body.year,
-                        category: req.body.category,
-                        addedBy: req.body.uid
-                      };
+                    locallaws.countDocuments().then((currentId) => {
+                      const place = {
+                          id: currentId+1,
+                          title: req.body.title,
+                          description: req.body.description,
+                          article: req.body.article,
+                          year: req.body.year,
+                          category: req.body.category,
+                          addedBy: req.body.name
+                        };
+              
+                        locallaws.insertOne(place, (err, result) => {
+                              console.log(result);
+                              res.send(result)
+                        })
+                  });
             
-                      locallaws.insertOne(place, (err, result) => {
-                            console.log(result);
-                            res.send(result)
-                      })
-                });
+                  });
+        
           
               });
 
@@ -296,46 +345,37 @@ MongoClient.connect(uri, { useUnifiedTopology: true,   useNewUrlParser: true})
             app.post('/addevent', function (req, res) {
 
               
-              var ref = database.ref('users/' + req.query.uid);
+              var ref = database.ref('users/' + req.body.uid);
               ref
                   .once('value')
                   .then(function (snapshot) {
                     return ref.update({
                       points:
-                        snapshot.val().points + 20,
+                      snapshot.val().points + 10,
                     });
                   })
                   .then(() => {
-                    topics.updateOne(
-                      {id: id}, 
-                      {$addToSet: {answears : {
-                          "answear" : answear,
-                          "addedBy": addedBy
-                      }} }
-                  ).then((e) => {
-                      console.log(e)
-                      res.send("gol")
-                  })
+                    events.countDocuments().then((currentId) => {
+                      const place = {
+                          id: currentId+1,
+                          title: req.body.title,
+                          image: req.body.image,
+                          description: req.body.description,
+                          date: req.body.date,
+                          category: req.body.category,
+                          addedBy: req.body.name
+                        };
+              
+                        events.insertOne(place, (err, result) => {
+                              console.log(result);
+                              res.send(result)
+                        })
+                  });
                   });
 
     
         
-                events.countDocuments().then((currentId) => {
-                    const place = {
-                        id: currentId+1,
-                        title: req.body.title,
-                        image: req.body.image,
-                        description: req.body.description,
-                        date: req.body.date,
-                        category: req.body.category,
-                        addedBy: req.body.uid
-                      };
-            
-                      events.insertOne(place, (err, result) => {
-                            console.log(result);
-                            res.send(result)
-                      })
-                });
+ 
           
               });
 
@@ -374,7 +414,7 @@ MongoClient.connect(uri, { useUnifiedTopology: true,   useNewUrlParser: true})
                         question: req.body.question,
                         date: req.body.date,
                         category: req.body.category,
-                        addedBy: req.body.uid,
+                        addedBy: req.body.name,
                         answears: []
                       };
             
@@ -420,7 +460,26 @@ MongoClient.connect(uri, { useUnifiedTopology: true,   useNewUrlParser: true})
           
               });
 
+              app.post('/substractPoints', function (req, res) {
 
+              
+                var ref = database.ref('users/' + req.body.uid);
+                ref
+                    .once('value')
+                    .then(function (snapshot) {
+                      return ref.update({
+                        points:
+                        snapshot.val().points - req.body.points,
+                      });
+                    })
+                    .then(() => {
+                        res.send(true);
+                    });
+  
+    
+   
+            
+                });
 
     // Rutele pentru firebase
        // FIREBASE
