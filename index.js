@@ -280,23 +280,47 @@ MongoClient.connect(uri, { useUnifiedTopology: true,   useNewUrlParser: true})
               });
         
             app.post('/addevent', function (req, res) {
+
+              
+              var ref = database.ref('users/' + req.body.uid);
+              ref
+                  .once('value')
+                  .then(function (snapshot) {
+                    return ref.update({
+                      points:
+                        snapshot.val().points + 20,
+                    });
+                  })
+                  .then(() => {
+                    topics.updateOne(
+                      {id: id}, 
+                      {$addToSet: {answears : {
+                          "answear" : answear,
+                          "addedBy": addedBy
+                      }} }
+                  ).then((e) => {
+                    events.countDocuments().then((currentId) => {
+                      const place = {
+                          id: currentId+1,
+                          title: req.body.title,
+                          image: req.body.image,
+                          description: req.body.description,
+                          date: req.body.date,
+                          category: req.body.category,
+                          addedBy: req.body.uid
+                        };
+              
+                        events.insertOne(place, (err, result) => {
+                              console.log(result);
+                              res.send(result)
+                        })
+                  });
+                  })
+                  });
+
+    
         
-                events.countDocuments().then((currentId) => {
-                    const place = {
-                        id: currentId+1,
-                        title: req.body.title,
-                        description: req.body.description,
-                        article: req.body.article,
-                        date: req.body.year,
-                        category: req.body.category,
-                        addedBy: req.body.uid
-                      };
-            
-                      events.insertOne(place, (err, result) => {
-                            console.log(result);
-                            res.send(result)
-                      })
-                });
+
           
               });
 
@@ -333,7 +357,7 @@ MongoClient.connect(uri, { useUnifiedTopology: true,   useNewUrlParser: true})
                         id: currentId+1,
                         title: req.body.title,
                         question: req.body.question,
-                        date: "2021",
+                        date: req.body.date,
                         category: req.body.category,
                         addedBy: req.body.uid,
                         answears: []
@@ -347,22 +371,36 @@ MongoClient.connect(uri, { useUnifiedTopology: true,   useNewUrlParser: true})
           
               });
 
-              app.post('/addAnswear', function (req, res) {
+              app.get('/addAnswear', function (req, res) {
 
-                const id = parseInt(req.body.id);
-                const addedBy = req.body.uid;
-                const answear = req.body.answear;
+                const id = parseInt(req.query.id);
+                const addedBy = req.query.name;
+                const answear = req.query.answear;
 
-                topics.updateOne(
-                    {id: id}, 
-                    {$addToSet: {answears : {
-                        "answear" : answear,
-                        "addedBy": addedBy
-                    }} }
-                ).then((e) => {
-                    console.log(e)
-                    res.send("gol")
-                })
+                // Adaugam in cont
+
+                var ref = database.ref('users/' + req.query.uid);
+                  ref
+                      .once('value')
+                      .then(function (snapshot) {
+                        return ref.update({
+                          points:
+                            snapshot.val().points + 20,
+                        });
+                      })
+                      .then(() => {
+                        topics.updateOne(
+                          {id: id}, 
+                          {$addToSet: {answears : {
+                              "answear" : answear,
+                              "addedBy": addedBy
+                          }} }
+                      ).then((e) => {
+                          console.log(e)
+                          res.send("gol")
+                      })
+                      });
+
         
           
               });
@@ -381,7 +419,7 @@ MongoClient.connect(uri, { useUnifiedTopology: true,   useNewUrlParser: true})
   app.get('/createuser', function (req, res) {
       const idToken = req.query.token;
 
-      console.log(req.query.token);
+      console.log(req.query);
 
       if (!idToken) {
         res.sendStatus(403);
@@ -398,6 +436,7 @@ MongoClient.connect(uri, { useUnifiedTopology: true,   useNewUrlParser: true})
               .set({
                 created: new Date().getTime(),
                 email: decodedToken.email,
+                name: req.query.name,
                 lastLoggedIn: new Date().getTime(),
                 phone: req.query.phone,
                 currentLocation: req.query.currentLocation,
